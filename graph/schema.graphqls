@@ -6,8 +6,8 @@ type JobListing {
   _id: ID!
   title: String!
   description: String!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  company: String!
+  url: String!
 }
 
 type Query {

@@ -6,19 +6,36 @@ package graph
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/vamshireddy02/job-portal/database"
 	"github.com/vamshireddy02/job-portal/graph/model"
 )
 
-// CreateTodo is the resolver for the createTodo field.
-func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
-	panic(fmt.Errorf("not implemented: CreateTodo - createTodo"))
+var db = database.Connect()
+
+// CreateJobListing is the resolver for the createJobListing field.
+func (r *mutationResolver) CreateJobListing(ctx context.Context, input model.CreateJobListingInput) (*model.JobListing, error) {
+	return db.CreateJobListing(input), nil
 }
 
-// Todos is the resolver for the todos field.
-func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
-	panic(fmt.Errorf("not implemented: Todos - todos"))
+// UpdateJobListing is the resolver for the updateJobListing field.
+func (r *mutationResolver) UpdateJobListing(ctx context.Context, id string, input model.UpdateJobListingInput) (*model.JobListing, error) {
+	return db.UpdateJobListing(id, input), nil
+}
+
+// DeleteJobListing is the resolver for the deleteJobListing field.
+func (r *mutationResolver) DeleteJobListing(ctx context.Context, id string) (*model.DeleteJobResponse, error) {
+	return db.DeleteJobListing(id), nil
+}
+
+// Jobs is the resolver for the jobs field.
+func (r *queryResolver) Jobs(ctx context.Context) ([]*model.JobListing, error) {
+	return db.GetJobs(), nil
+}
+
+// Job is the resolver for the job field.
+func (r *queryResolver) Job(ctx context.Context, id string) (*model.JobListing, error) {
+	return db.GetJob(id), nil
 }
 
 // Mutation returns MutationResolver implementation.
@@ -29,3 +46,18 @@ func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+/*
+	func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
+	panic(fmt.Errorf("not implemented: CreateTodo - createTodo"))
+}
+func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
+	panic(fmt.Errorf("not implemented: Todos - todos"))
+}
+*/
