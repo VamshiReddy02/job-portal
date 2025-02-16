@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
 
@@ -78,13 +80,52 @@ var GetCmd = &cobra.Command{
 		}
 		defer resp.Body.Close()
 
-		body, err := io.ReadAll(resp.Body) // Using io.ReadAll instead of ioutil.ReadAll
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			fmt.Println("Error reading response:", err)
 			return
 		}
 
-		fmt.Println("Response:", string(body))
+		var result map[string]interface{}
+		if err := json.Unmarshal(body, &result); err != nil {
+			fmt.Println("Error parsing response:", err)
+			return
+		}
+
+		dataKey := "jobs"
+		if jobID != "" {
+			dataKey = "job"
+		} else if jobTitle != "" {
+			dataKey = "jobsByTitle"
+		}
+
+		jobs, ok := result["data"].(map[string]interface{})[dataKey]
+		if !ok {
+			fmt.Println("No job data found.")
+			return
+		}
+
+		jobList, ok := jobs.([]interface{})
+		if !ok {
+			jobList = []interface{}{jobs}
+		}
+
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader([]string{"ID", "Title", "Company", "Description", "URL"})
+		table.SetBorder(false)
+
+		for _, j := range jobList {
+			jobMap, _ := j.(map[string]interface{})
+			table.Append([]string{
+				fmt.Sprintf("%v", jobMap["_id"]),
+				fmt.Sprintf("%v", jobMap["title"]),
+				fmt.Sprintf("%v", jobMap["company"]),
+				fmt.Sprintf("%v", jobMap["description"]),
+				fmt.Sprintf("%v", jobMap["url"]),
+			})
+		}
+
+		table.Render()
 	},
 }
 
